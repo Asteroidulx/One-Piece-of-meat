@@ -13,17 +13,19 @@ Object::~Object() {
 }
 
 void Object::Update() {
-	xpos++; 
+	xpos++;
 	ypos++;
 	srcRect.x = 0;
 	srcRect.y = 0;
-	srcRect.h = 32;
-	srcRect.w = 32;
+	srcRect.h = 400;
+	srcRect.w = 400;
 
 	destRect.x = xpos;
 	destRect.y = ypos;
-	destRect.h = srcRect.h*2;
-	destRect.w = srcRect.w*2;
+	destRect.w = srcRect.w / 8;
+	destRect.h = srcRect.h / 8;
+
+	
 }
 
 void Object::Render() {

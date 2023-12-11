@@ -28,7 +28,7 @@ Game::Game(const char* title, atom x, atom y, atom w, atom h, bool fullscreen) {
 	else {
 		isRunning = false;
 	}
-	player = new Object("assets/Luffy.png", renderer,0,0);
+	player = new Object("assets/Luffy.png", renderer, 0, 0);
 	fridge = new Object("assets/Fridge.png", renderer, 50, 50);
 }
 
