@@ -1,9 +1,8 @@
 #include "Object.h"
 #include "TextureManager.h"
 
-Object::Object(const char* texturesheet, SDL_Renderer* ren, int x, int y) {
-	renderer = ren;
-	objTexture = TextureManager::LoadTexture(texturesheet, ren);
+Object::Object(const char* texturesheet, int x, int y) {
+	objTexture = TextureManager::LoadTexture(texturesheet);
 	xpos = x;
 	ypos = y;
 }
@@ -22,12 +21,10 @@ void Object::Update() {
 
 	destRect.x = xpos;
 	destRect.y = ypos;
-	destRect.w = srcRect.w / 8;
-	destRect.h = srcRect.h / 8;
-
-	
+	destRect.w = 64;
+	destRect.h = 64;
 }
 
 void Object::Render() {
-	SDL_RenderCopy(renderer, objTexture, &srcRect, &destRect);
+	SDL_RenderCopy(Game::getrenderer(), objTexture, &srcRect, &destRect);
 }

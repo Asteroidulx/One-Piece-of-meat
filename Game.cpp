@@ -1,9 +1,13 @@
 #include "Game.h"
 #include "TextureManager.h"
-#include "Object.h"
+#include "Map.h"
+#include "ECS/Components.h"
+#include "Vector2D.h"
 
-Object* player;
-Object* fridge;
+Map* map;
+SDL_Renderer* Game::renderer = nullptr;
+Manager manager;
+auto& player(manager.addEntity());
 
 Game::Game(const char* title, atom x, atom y, atom w, atom h, bool fullscreen) {
 	atom flags = 0;
@@ -20,7 +24,7 @@ Game::Game(const char* title, atom x, atom y, atom w, atom h, bool fullscreen) {
 
 		renderer = SDL_CreateRenderer(window, -1, 0);
 		if (renderer) {
-			SDL_SetRenderDrawColor(renderer, 20, 205, 255, 255);
+			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 			printf("Renderer created!\n");
 		}
 		isRunning = true;
@@ -28,8 +32,10 @@ Game::Game(const char* title, atom x, atom y, atom w, atom h, bool fullscreen) {
 	else {
 		isRunning = false;
 	}
-	player = new Object("assets/Luffy.png", renderer, 0, 0);
-	fridge = new Object("assets/Fridge.png", renderer, 50, 50);
+	map = new Map();
+
+	player.addComponent<TransformComponent>(0,64);
+	player.addComponent<SpriteComponent>("assets/Luffy.png");
 }
 
 Game::~Game() {
@@ -51,19 +57,29 @@ void Game::handleEvents() {
 }
 
 void Game::update() {
-	player->Update();
-	fridge->Update();
+	manager.refresh();
+	manager.update();
+
+	player.getComponent<TransformComponent>().setposition(player.getComponent<TransformComponent>().getposition().Add(Vector2D(1,1)));
+	if (player.getComponent<TransformComponent>().getx() > 100) {
+		player.getComponent<SpriteComponent>().setTex("assets/Fridge.png");
+	}
 }
 
 void Game::render() {
 	SDL_RenderClear(renderer);
 	//add stuff to render
-	player->Render();
-	fridge->Render();
+	map->DrawMap();
+
+	manager.draw();
 	//until here
 	SDL_RenderPresent(renderer);
 }
 
 bool Game::running() {
 	return isRunning;
+}
+
+SDL_Renderer* Game::getrenderer() {
+	return renderer;
 }

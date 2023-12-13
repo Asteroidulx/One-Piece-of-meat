@@ -2,7 +2,7 @@
 
 int main(int argc, char* args[])
 {
-	const atom FPS = 160;
+	const atom FPS = 60;
 	const atom frameDelay = 1000 / FPS;
 
 	atom frameStart;
