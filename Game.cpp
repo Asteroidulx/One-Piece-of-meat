@@ -3,11 +3,14 @@
 #include "Map.h"
 #include "ECS/Components.h"
 #include "Vector2D.h"
+#include "Collision.h"
 
 Map* map;
 SDL_Renderer* Game::renderer = nullptr;
 Manager manager;
 auto& player(manager.addEntity());
+auto& wall(manager.addEntity());
+SDL_Event Game::event;
 
 Game::Game(const char* title, atom x, atom y, atom w, atom h, bool fullscreen) {
 	atom flags = 0;
@@ -34,8 +37,14 @@ Game::Game(const char* title, atom x, atom y, atom w, atom h, bool fullscreen) {
 	}
 	map = new Map();
 
-	player.addComponent<TransformComponent>(0,64);
+	player.addComponent<TransformComponent>();
 	player.addComponent<SpriteComponent>("assets/Luffy.png");
+	player.addComponent<KeyboardController>();
+	player.addComponent<ColliderComponent>("player");
+
+	wall.addComponent<TransformComponent>(300.0f,300.0f, 300, 20, 1);
+	wall.addComponent<SpriteComponent>("assets/Dirt.png");
+	wall.addComponent<ColliderComponent>("wall");
 }
 
 Game::~Game() {
@@ -46,7 +55,7 @@ Game::~Game() {
 }
 
 void Game::handleEvents() {
-	SDL_Event event;
+	
 	SDL_PollEvent(&event);
 	switch (event.type) {
 	case SDL_QUIT: isRunning = false;
@@ -59,10 +68,10 @@ void Game::handleEvents() {
 void Game::update() {
 	manager.refresh();
 	manager.update();
-
-	player.getComponent<TransformComponent>().setposition(player.getComponent<TransformComponent>().getposition().Add(Vector2D(1,1)));
-	if (player.getComponent<TransformComponent>().getx() > 100) {
-		player.getComponent<SpriteComponent>().setTex("assets/Fridge.png");
+	if (Collision::AABB(player.getComponent<ColliderComponent>().getcollider(),
+		wall.getComponent<ColliderComponent>().getcollider())) {
+		player.getComponent<TransformComponent>().setvelocity(player.getComponent<TransformComponent>().getvelocity()*-1);
+		cout <<"Wall Hit!"<< endl;
 	}
 }
 
@@ -82,4 +91,12 @@ bool Game::running() {
 
 SDL_Renderer* Game::getrenderer() {
 	return renderer;
+}
+
+SDL_Event Game::getevent() {
+	return event;
+}
+
+void Game::setevent(SDL_Event e) {
+	event = e;
 }

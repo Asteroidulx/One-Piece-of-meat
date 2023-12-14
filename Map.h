@@ -8,11 +8,11 @@ class Map {
 	SDL_Texture* grass;
 	SDL_Texture* water;
 
-	int map[20][32];
+	int map[20][32];//map[32][60]; //for screen resolution = 1920x1080 (fullscreen)
 
 public:
 	Map();
-	~Map(){}
-	void LoadMap(int arr[20][32]);
+	~Map();
+	void LoadMap(int arr[20][32]/*arr[32][60] */ );
 	void DrawMap();
 };
