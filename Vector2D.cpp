@@ -1,22 +1,22 @@
 #include "Vector2D.h"
 
 
-float Vector2D::gety()
+int Vector2D::gety()
 {
 	return y;
 }
 
-float Vector2D::getx()
+int Vector2D::getx()
 {
 	return x;
 }
 
-void Vector2D::sety(float y)
+void Vector2D::sety(int y)
 {
 	this->y = y;
 }
 
-void Vector2D::setx(float x)
+void Vector2D::setx(int x)
 {
 	this->x = x;
 }

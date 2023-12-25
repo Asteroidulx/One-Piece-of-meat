@@ -4,13 +4,23 @@
 #include "ECS/Components.h"
 #include "Vector2D.h"
 #include "Collision.h"
+#include "AssetManager.h"
+#include <sstream>
 
-Map* map;
-SDL_Renderer* Game::renderer = nullptr;
+Map* mapa;
 Manager manager;
-auto& player(manager.addEntity());
-auto& wall(manager.addEntity());
+
+SDL_Renderer* Game::renderer = nullptr;
 SDL_Event Game::event;
+
+SDL_Rect Game::camera = {0, 0, 1024, 640};
+
+AssetManager* Game::assets = new AssetManager(&manager);
+
+bool Game::isRunning = false;
+
+auto& player(manager.addEntity());
+auto& label(manager.addEntity());
 
 Game::Game(const char* title, atom x, atom y, atom w, atom h, bool fullscreen) {
 	atom flags = 0;
@@ -32,19 +42,27 @@ Game::Game(const char* title, atom x, atom y, atom w, atom h, bool fullscreen) {
 		}
 		isRunning = true;
 	}
-	else {
-		isRunning = false;
-	}
-	map = new Map();
 
-	player.addComponent<TransformComponent>();
-	player.addComponent<SpriteComponent>("assets/Luffy.png");
+	/*if (TTF_Init() == -1) {
+		cout << "Error : SDL_TTF" << endl;
+	}*/
+	
+	assets->AddTexture("terrain", "assets/Lvl1MapTileset.png");
+	assets->AddTexture("player", "assets/Luffy.png");
+
+	//assets->AddFont("arial", "assets/arial.ttf", 16);
+
+	mapa = new Map("terrain", 1, 64);
+	mapa->LoadMap("assets/Lvl1Map.map", 32, 20);
+
+	player.addComponent<TransformComponent>(133, 133);//(5, 1157);//(64*0+5, 64*18+5)
+	player.addComponent<SpriteComponent>("player");
 	player.addComponent<KeyboardController>();
 	player.addComponent<ColliderComponent>("player");
-
-	wall.addComponent<TransformComponent>(300.0f,300.0f, 300, 20, 1);
-	wall.addComponent<SpriteComponent>("assets/Dirt.png");
-	wall.addComponent<ColliderComponent>("wall");
+	player.addGroup(groupPlayers);
+	
+	//SDL_Color white = { 255, 255, 255, 255 };
+	//label.addComponent<UILabel>(10,10, "Test String", "arial", white);
 }
 
 Game::~Game() {
@@ -65,28 +83,71 @@ void Game::handleEvents() {
 	}
 }
 
+auto& tiles(manager.getGroup(Game::groupMap));
+auto& players(manager.getGroup(Game::groupPlayers));
+auto& colliders(manager.getGroup(Game::groupColliders));
+
 void Game::update() {
+	SDL_Rect playerCol = player.getComponent<ColliderComponent>().getcollider();
+	Vector2D playerPos = player.getComponent<TransformComponent>().getposition();
+
+	/*stringstream ss;
+	ss << "Player position: " << playerPos;
+	label.getComponent<UILabel>().SetLabelText(ss.str(), "arial");*/
+
 	manager.refresh();
 	manager.update();
-	if (Collision::AABB(player.getComponent<ColliderComponent>().getcollider(),
-		wall.getComponent<ColliderComponent>().getcollider())) {
-		player.getComponent<TransformComponent>().setvelocity(player.getComponent<TransformComponent>().getvelocity()*-1);
-		cout <<"Wall Hit!"<< endl;
+	
+	for (auto& c : colliders) {
+		SDL_Rect cCol = c->getComponent<ColliderComponent>().getcollider();
+		if (Collision::AABBx(player.getComponent<ColliderComponent>().getcollider(), cCol) && player.getComponent<TransformComponent>().pgetx()!=playerPos.getx()) {
+			player.getComponent<TransformComponent>().setposition(playerPos);
+		}
+		if (Collision::AABBy(player.getComponent<ColliderComponent>().getcollider(), cCol) && player.getComponent<TransformComponent>().pgety() != playerPos.gety()) {
+			player.getComponent<TransformComponent>().setposition(playerPos);
+		}
 	}
+	
+	camera.x = player.getComponent<TransformComponent>().pgetx() - 480;
+	camera.y = player.getComponent<TransformComponent>().pgety() - 288;
+
+	if (camera.x < 0)
+		camera.x = 0;
+	if (camera.y < 0)
+		camera.y = 0;
+	if (camera.x > camera.w)
+		camera.x = camera.w;
+	if (camera.y > camera.h)
+		camera.y = camera.h;
 }
 
 void Game::render() {
 	SDL_RenderClear(renderer);
 	//add stuff to render
-	map->DrawMap();
+	for (auto& t : tiles) {
+		t->draw();
+	}
 
-	manager.draw();
+	/*for (auto& c : colliders) {
+		c->draw();
+	}*/
+
+	for (auto& p : players) {
+		p->draw();
+	}
+
+	//label.draw();
+
 	//until here
 	SDL_RenderPresent(renderer);
 }
 
 bool Game::running() {
 	return isRunning;
+}
+
+void Game::setisrunning(bool cond) {
+	isRunning = cond;
 }
 
 SDL_Renderer* Game::getrenderer() {
@@ -99,4 +160,8 @@ SDL_Event Game::getevent() {
 
 void Game::setevent(SDL_Event e) {
 	event = e;
+}
+
+AssetManager* Game::getassets() {
+	return assets;
 }

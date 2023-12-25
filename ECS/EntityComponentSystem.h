@@ -10,23 +10,28 @@ using namespace std;
 
 class Component;
 class Entity;
+class Manager;
 
 using ComponentID = size_t;
+using Group = size_t;
 
-inline ComponentID getComponentTypeID() {
-	static ComponentID lastID = 0;
+inline ComponentID getNewComponentTypeID() {
+	static ComponentID lastID = 0u;
 	return lastID++;
 }
 
 template <typename T> 
 inline ComponentID getComponentTypeID() noexcept {
-	static ComponentID typeID = getComponentTypeID();
+	static ComponentID typeID = getNewComponentTypeID();
 	return typeID;
 }
 
 constexpr size_t maxComponents = 32;
+constexpr size_t maxGroups = 32;
 
 using ComponentBitSet = bitset<maxComponents>;
+using GroupBitSet = bitset<maxGroups>;
+
 using ComponentArray = array<Component*, maxComponents>;
 
 class Component {
@@ -42,15 +47,23 @@ public:
 };
 
 class Entity {
+	Manager& manager;
 	bool active = true;
 	vector<unique_ptr<Component>> components;
 	ComponentArray componentArray;
 	ComponentBitSet componentBitSet;
+	GroupBitSet groupBitSet;
+
 public:
+	Entity(Manager& mManager) : manager(mManager) {}
 	void update();
 	void draw();
 	bool isActive() const;
 	void destroy();
+
+	bool hasGroup(Group mGroup);
+	void addGroup(Group mGroup);
+	void delGroup(Group mGroup);
 
 	template <typename T>
 	bool hasComponent()const {
@@ -81,12 +94,15 @@ public:
 
 class Manager {
 	vector<unique_ptr<Entity>>entities;
+	array<vector<Entity*>, maxGroups> groupedEntities;
 
 public:
 	void update();
 	void draw();
 	void refresh();
 
+	void AddToGroup(Entity* mEntity, Group mGroup);
+	vector<Entity*>& getGroup(Group mGroup);
 	Entity& addEntity();
 };
 

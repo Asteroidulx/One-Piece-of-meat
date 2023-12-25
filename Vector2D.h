@@ -3,17 +3,17 @@
 using namespace std;
 
 class Vector2D {
-	float x;
-	float y;
+	int x;
+	int y;
 
 public:
-	Vector2D():x(0.0f), y(0.0f){}
-	Vector2D(float x, float y):x(x), y(y){}
+	Vector2D():x(0), y(0){}
+	Vector2D(int x, int y):x(x), y(y){}
 
-	float gety();
-	float getx();
-	void sety(float);
-	void setx(float);
+	int gety();
+	int getx();
+	void sety(int);
+	void setx(int);
 
 	Vector2D& Add(const Vector2D& vec);
 	Vector2D& Subtract(const Vector2D& vec);

@@ -1,4 +1,3 @@
-#pragma once
 #include "TextureManager.h"
 
 SDL_Texture* TextureManager::LoadTexture(const char* texture) {
@@ -9,7 +8,7 @@ SDL_Texture* TextureManager::LoadTexture(const char* texture) {
 	return tex;
 }
 
-void TextureManager::Draw(SDL_Texture* tex, SDL_Rect src, SDL_Rect dest) {
-	SDL_RenderCopy(Game::getrenderer(), tex, &src, &dest);
+void TextureManager::Draw(SDL_Texture* tex, SDL_Rect src, SDL_Rect dest, SDL_RendererFlip flip) {
+	SDL_RenderCopyEx(Game::getrenderer(), tex, &src, &dest, NULL, NULL, flip);
 }
 

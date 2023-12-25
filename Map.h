@@ -1,18 +1,16 @@
 #pragma once
-#include "Game.h"
+using namespace std;
+#include <string>
 
 class Map {
-	SDL_Rect src, dest;
-
-	SDL_Texture* dirt;
-	SDL_Texture* grass;
-	SDL_Texture* water;
-
-	int map[20][32];//map[32][60]; //for screen resolution = 1920x1080 (fullscreen)
+	string texID;
+	int mapScale;
+	int tileSize;
+	int scaledSize;
 
 public:
-	Map();
+	Map(string tID, int maps, int tscale);
 	~Map();
-	void LoadMap(int arr[20][32]/*arr[32][60] */ );
-	void DrawMap();
+	void LoadMap(string path, int sizeX, int sizeY);
+	void AddTile(int srcx, int srcy, int xpos, int ypos);
 };
