@@ -95,3 +95,13 @@ ostream& operator<<(ostream& stream, const Vector2D& vec) {
 	stream << "("<< vec.x<<", "<<vec.y<<")";
 	return stream;
 }
+
+bool Vector2D::operator==(const Vector2D& vec) {
+	bool a = (this->x == vec.x && this->y == vec.y) ? true : false;
+	return a;
+}
+
+bool Vector2D::operator!=(const Vector2D& vec) {
+	bool a = (this->x == vec.x && this->y == vec.y) ? false : true;
+	return a;
+}

@@ -63,6 +63,10 @@ vector<Entity*>& Manager::getGroup(Group mGroup) {
 	return groupedEntities[mGroup];
 }
 
+int Manager::getNrInGroup(Group mGroup) {
+	return groupedEntities[mGroup].size();
+}
+
 Entity& Manager::addEntity() {
 	Entity* e = new Entity(*this);
 	unique_ptr<Entity> uPtr{ e };

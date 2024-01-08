@@ -28,14 +28,21 @@ public:
 	string gettag() { return tag; }
 
 	void init()override {
-		if (!entity->hasComponent<TransformComponent>()) {
-			entity->addComponent<TransformComponent>();
+		if (tag != "rock") {
+			if (!entity->hasComponent<TransformComponent>()) {
+				entity->addComponent<TransformComponent>();
+			}
+			transform = &entity->getComponent<TransformComponent>();			
 		}
-		transform = &entity->getComponent<TransformComponent>();
-
+		else {
+			if (!entity->hasComponent<Rock>()) {
+				entity->addComponent<Rock>();
+			}
+			transform = entity->getComponent<Rock>().getTrComp();
+		}
 		tex = TextureManager::LoadTexture("assets/ColTex.png");
-		srcR = {0, 0, 64, 64};
-		destR = {collider.x, collider.y, collider.w, collider.h};
+		srcR = { 0, 0, 64, 64 };
+		destR = { collider.x, collider.y, collider.w, collider.h };
 	}
 
 	void update()override {
@@ -45,8 +52,10 @@ public:
 			collider.w = transform->getw() / transform->gets();
 			collider.h = transform->geth() / transform->gets();
 		}
-		destR.x = collider.x - Game::camera.x;
-		destR.y = collider.y - Game::camera.y;
+		if (tag != "rock" || tag!= "meat") {
+			destR.x = collider.x - Game::camera.x;
+			destR.y = collider.y - Game::camera.y;
+		}
 	}
 
 	void draw() override {

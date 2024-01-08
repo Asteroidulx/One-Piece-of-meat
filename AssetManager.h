@@ -4,6 +4,7 @@
 #include "TextureManager.h"
 #include "Vector2D.h"
 #include "ECS/EntityComponentSystem.h"
+#include "ItemMap.h"
 //#include "SDL_ttf.h"
 
 class AssetManager {
@@ -15,7 +16,9 @@ public:
 	AssetManager(Manager* man);
 	~AssetManager();
 	//game objects
-	
+	void createRock(Vector2D pos, string id);
+	void createMeat(Vector2D pos, string id);
+	void createMandR(ItemMap& harta, string fisier, int sizeX, int sizeY);
 	//texture manager
 	void AddTexture(string id, const char* path);
 	SDL_Texture* GetTexture(string id);

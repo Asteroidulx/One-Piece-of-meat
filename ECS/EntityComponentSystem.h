@@ -104,5 +104,6 @@ public:
 	void AddToGroup(Entity* mEntity, Group mGroup);
 	vector<Entity*>& getGroup(Group mGroup);
 	Entity& addEntity();
+	int getNrInGroup(Group mGroup);
 };
 

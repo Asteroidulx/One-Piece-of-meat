@@ -1,7 +1,7 @@
 #pragma once
 #include "Components.h"
 #include "../Vector2D.h"
-
+#include "../Game.h"
 class TransformComponent : public Component
 {
 	Vector2D position;
@@ -9,11 +9,15 @@ class TransformComponent : public Component
 	int speed = 3;
 	int height = 400;
 	int width = 400;
-	float scale = 7.5;
+	float scale = 6.25;
 	int xposmov = 0; 
 	int yposmov = 0;
 	bool movfiny = true;
 	bool movfinx = true;
+	bool movox = false;//ex: sa pot face stg, sus, stg, fara sa apas din nou pe stg
+	bool movoy = false;
+	bool movxo = false;
+	bool movyo = false;
 
 public:
 	TransformComponent() {
@@ -23,10 +27,7 @@ public:
 		position.setx(x);
 		position.sety(y);
 	}
-	TransformComponent(float s) {
-		position.Zero();
-		scale = s;
-	}
+	
 	TransformComponent(int x, int y, int h, int w, float s) {
 		position.setx(x);
 		position.sety(y);
@@ -44,47 +45,164 @@ public:
 			xposmov = 1;
 		else if (vgetx() < 0)
 			xposmov = -1;
-		else
-			updatex();
+		else if (speed == 3)
+			update3x();
+		else if (speed == 2)
+			update2x();
+		else if (speed == 1)
+			update1x();
 
 		if (vgety() > 0)
 			yposmov = 1;
 		else if (vgety() < 0)
 			yposmov = -1;
-		else
-			updatey();
-
+		else if (speed == 3)
+			update3y();
+		else if (speed == 2)
+			update2y();
+		else if (speed == 1)
+			update1y();
 
 		if(movfiny)
 			psetx(pgetx() + vgetx() * speed);
 		if(movfinx)
 			psety(pgety() + vgety() * speed);
-		
 	}
 
-	void updatex() {
-		int interposx = pgetx() + 59;
+	void update1y() {
+		int interposy = pgety();
+		int leap = interposy % 64;
+		if (leap) {
+			movfiny = false;
+			if (yposmov == 1) {
+				if ((pgety()) % 64)
+					psety(pgety() + speed);
+			}
+			else if (yposmov == -1) {
+				if ((pgety()) % 64)
+					psety(pgety() - speed);
+			}
+		}
+		else
+			movfiny = true;
+	}
+	void update1x() {
+		int interposx = pgetx();
 		int leap = interposx % 64;
 		if (leap) {
 			movfinx = false;
-			if (xposmov == 1) { //daca dupa deplasare entitatea nu se afla pe mijlocul casutei (5/64,5/64) 
-				if (!((pgetx() + 60) % 64))
+			if (xposmov == 1) {
+				if ((pgetx()) % 64)
+					psetx(pgetx() + speed);
+			}
+			else if (xposmov == -1) {
+				if ((pgetx()) % 64)
+					psetx(pgetx() - speed);
+			}
+		}
+		else
+			movfinx = true;
+	}
+
+	void update2y() {
+		int interposy = pgety();
+		int leap = interposy % 64;
+		if (leap) {
+			movfiny = false;
+			if (yposmov == 1) { 
+				if (!((pgety() + 1) % 64))
+					psety(pgety() + 1);
+				else
+					if ((pgety()) % 64)
+						psety(pgety() + speed);
+			}
+			else if (yposmov == -1) {
+				if (!((pgety() + 63) % 64))
+					psety(pgety() - 1);
+				else
+					if ((pgety()) % 64)
+						psety(pgety() - speed);
+			}
+		}
+		else
+			movfiny = true;
+	}
+	void update2x() {
+		int interposx = pgetx();
+		int leap = interposx % 64;
+		if (leap) {
+			movfinx = false;
+			if (xposmov == 1) { 
+				if (!((pgetx() + 1) % 64))
 					psetx(pgetx() + 1);
 				else
-					if (!((pgetx() + 61) % 64))
+					if ((pgetx()) % 64)
+						psetx(pgetx() + speed);
+			}
+			else if (xposmov == -1) {
+				if (!((pgetx() + 63) % 64))
+					psetx(pgetx() - 1);
+				else
+					if ((pgetx()) % 64)
+						psetx(pgetx() - speed);
+			}
+		}
+		else
+			movfinx = true;
+	}
+
+	void update3y() {
+		int interposy = pgety();
+		int leap = interposy % 64;
+		if (leap) {
+			movfiny = false;
+			if (yposmov == 1) { 
+				if (!((pgety() + 1) % 64))
+					psety(pgety() + 1);
+				else
+					if (!((pgety() + 2) % 64))
+						psety(pgety() + 2);
+					else
+						if ((pgety()) % 64)
+							psety(pgety() + speed);
+			}
+			else if (yposmov == -1) {
+				if (!((pgety() + 63) % 64))
+					psety(pgety() - 1);
+				else
+					if (!((pgety() + 62) % 64))
+						psety(pgety() - 2);
+					else
+						if ((pgety()) % 64)
+							psety(pgety() - speed);
+			}
+		}
+		else
+			movfiny = true;
+	}
+	void update3x() {
+		int interposx = pgetx();
+		int leap = interposx % 64;
+		if (leap) {
+			movfinx = false;
+			if (xposmov == 1) {  
+				if (!((pgetx() + 1) % 64))
+					psetx(pgetx() + 1);
+				else
+					if (!((pgetx() + 2) % 64))
 						psetx(pgetx() + 2);
 					else
-						if ((pgetx() + 59) % 64)//x+1, x+2, x aliniat la 5px de multiplu de 64px
+						if ((pgetx()) % 64)
 							psetx(pgetx() + speed);
 			}
 			else if (xposmov == -1) {
-				if (!((pgetx() + 58) % 64))
+				if (!((pgetx() + 63) % 64))
 					psetx(pgetx() - 1);
 				else
-					if (!((pgetx() + 57) % 64))
+					if (!((pgetx() + 62) % 64))
 						psetx(pgetx() - 2);
 					else
-						if ((pgetx() + 59) % 64)//x-1, x-2, x aliniat la 5px de multiplu de 64px
+						if ((pgetx()) % 64)
 							psetx(pgetx() - speed);
 			}
 		}
@@ -92,36 +210,12 @@ public:
 			movfinx = true;
 	}
 	
-	void updatey() {
-		int interposy = pgety() + 59;
-		int leap = interposy % 64;
-		if (leap) {
-			movfiny = false;
-			if (yposmov == 1) { //daca dupa deplasare entitatea nu se afla pe mijlocul casutei (5/64,5/64) 
-				if (!((pgety() + 60) % 64))
-					psety(pgety() + 1);
-				else
-					if (!((pgety() + 61) % 64))
-						psety(pgety() + 2);
-					else
-						if ((pgety() + 59) % 64)
-							psety(pgety() + speed);
-			}
-			else if (yposmov == -1) {
-				if (!((pgety() + 58) % 64))
-					psety(pgety() - 1);
-				else
-					if (!((pgety() + 57) % 64))
-						psety(pgety() - 2);
-					else
-						if ((pgety() + 59) % 64)
-							psety(pgety() - speed);
-			}
-		}
-		else
-			movfiny = true;
+	void setsp(int sp) {
+		speed = sp;
 	}
-	
+	int getsp() {
+		return speed;
+	}
 	int getw() {
 		return width;
 	}
@@ -157,6 +251,30 @@ public:
 	}
 	int vgety() {
 		return velocity.gety();
+	}
+	bool getmovox() {
+		return movox;
+	}
+	bool getmovoy() {
+		return movoy;
+	}
+	void setmovox(bool mx) {
+		movox = mx;
+	}
+	void setmovoy(bool my) {
+		movoy = my;
+	}
+	bool getmovxo() {
+		return movxo;
+	}
+	bool getmovyo() {
+		return movyo;
+	}
+	void setmovxo(bool mx) {
+		movxo = mx;
+	}
+	void setmovyo(bool my) {
+		movyo = my;
 	}
 	void vsetx(int x) {
 		velocity.setx(x);
