@@ -19,7 +19,10 @@ SDL_Rect Game::camera = {0, 0, MAX_WIDTH, MAX_HEIGHT};
 AssetManager* Game::assets = new AssetManager(&manager);
 ItemMap harta(32, 20);
 bool Game::isRunning = false;
-
+bool Game::esc = false;
+auto& imaginemenuesc(manager.addEntity());
+auto& imaginemenu(manager.addEntity());
+auto& imaginistart(manager.addEntity());
 auto& player(manager.addEntity());
 //auto& label(manager.addEntity());
 
@@ -48,25 +51,79 @@ Game::Game(const char* title, atom x, atom y, atom w, atom h, bool fullscreen) {
 		cout << "Error : SDL_TTF" << endl;
 	}*/
 	
+	mapa = new Map("terrain", 1, 64);
+
 	assets->AddTexture("terrain", "assets/Lvl1MapTileset.png");
 	assets->AddTexture("player", "assets/Luffy.png");
 	assets->AddTexture("rock", "assets/Rock-animation360.png");
 	assets->AddTexture("meat", "assets/meat.png");
+
+	assets->AddTexture("0", "assets/Fundal/menu_esc.png");			
+	assets->AddTexture("1", "assets/Fundal/menu_final_or_dead.png");	
+	assets->AddTexture("2", "assets/Fundal/you_died.png");			
+	assets->AddTexture("3", "assets/Fundal/omae_wa_mou_shindeiru.png");	
+	assets->AddTexture("4", "assets/Fundal/Level1clear.png");			
+	assets->AddTexture("5", "assets/Fundal/Level2clear.png");			
+	assets->AddTexture("6", "assets/Fundal/lastLevelclear.png");	
+	assets->AddTexture("7", "assets/Fundal/imag1.png");					
+	assets->AddTexture("8", "assets/Fundal/imag2.png");					
+	assets->AddTexture("9", "assets/Fundal/imag3.png");					
+	assets->AddTexture("10", "assets/Fundal/imag4.png");					
+	assets->AddTexture("11", "assets/Fundal/imag5.png");					
+	assets->AddTexture("12", "assets/Fundal/imag6.png");					
+	assets->AddTexture("13", "assets/Fundal/imag7.png");					
+	assets->AddTexture("14", "assets/Fundal/imag8.png");					
+	assets->AddTexture("15", "assets/Fundal/imag9.png");					
+	assets->AddTexture("16", "assets/Fundal/imag10.png");				
+	assets->AddTexture("17", "assets/Fundal/imag11.png");				
+	assets->AddTexture("18", "assets/Fundal/The_Meat.png");			
 	//assets->AddFont("arial", "assets/arial.ttf", 16);
+	
+	assets->addImages();
 
-	mapa = new Map("terrain", 1, 64);
-	mapa->LoadMap("assets/Lvl1Map.map", 32, 20);
-
-	player.addComponent<TransformComponent>(0, 1152);//(64*0, 64*18)
+	player.addComponent<TransformComponent>( 0, 1152 );//(64*0, 64*18)
 	player.addComponent<SpriteComponent>("player");
 	player.addComponent<KeyboardController>();
 	player.addComponent<ColliderComponent>("player");
 	player.addGroup(groupPlayers);
 
-	assets->createMandR(harta, "assets/ItemMap.Map", 32, 20);
-
 	//SDL_Color white = { 255, 255, 255, 255 };
 	//label.addComponent<UILabel>(10, 10, "Test String", "arial", white);
+}
+
+auto& imagini(manager.getGroup(Game::groupImages));
+auto& rocks(manager.getGroup(Game::groupRocks));
+auto& tiles(manager.getGroup(Game::groupMap));
+auto& colliders(manager.getGroup(Game::groupColliders));
+auto& players(manager.getGroup(Game::groupPlayers));
+auto& meats(manager.getGroup(Game::groupMeats));
+
+void Game::lvlinit(int lvl){
+	for (auto &r : rocks) {
+		r->destroy();
+	}
+	for (auto &m : meats) {
+		m->destroy();
+	}
+	for (auto &c : colliders) {
+		c->destroy();
+	}
+	
+	manager.refresh();
+	manager.update();
+	player.getComponent<TransformComponent>().setposition({ 0, 1152 });
+	player.getComponent<TransformComponent>().setvelocity({0, 0 });
+	meateat = 0;
+	if (lvl == 1) {
+		mapa->LoadMap("assets/Lvl1Map.map", 32, 20);
+		assets->createMandR(harta, "assets/Lvl1ItemMap.Map", 32, 20);
+	}else if (lvl == 2) {
+		mapa->LoadMap("assets/Lvl2Map.map", 32, 20);
+		assets->createMandR(harta, "assets/Lvl2ItemMap.Map", 32, 20);
+	}else if (lvl == 3) {
+		mapa->LoadMap("assets/Lvl3Map.map", 32, 20);
+		assets->createMandR(harta, "assets/Lvl3ItemMap.Map", 32, 20);
+	}
 }
 
 Game::~Game() {
@@ -87,14 +144,8 @@ void Game::handleEvents() {
 	}
 }
 
-auto& rocks(manager.getGroup(Game::groupRocks));
-auto& tiles(manager.getGroup(Game::groupMap));
-auto& colliders(manager.getGroup(Game::groupColliders));
-auto& players(manager.getGroup(Game::groupPlayers));
-auto& meats(manager.getGroup(Game::groupMeats));
-
 void Game::update() {
-	if (manager.getNrInGroup(groupPlayers)) {
+	if (!playerdied) {
 		SDL_Rect playerCol = player.getComponent<ColliderComponent>().getcollider();
 		Vector2D playerPos = player.getComponent<TransformComponent>().getposition();
 
@@ -114,81 +165,7 @@ void Game::update() {
 
 		manager.refresh();
 		manager.update();
-
-		//	bool colx = Collision::AABBxplayer(player.getComponent<ColliderComponent>().getcollider(), 
-		//										   r->getComponent<ColliderComponent>().getcollider());
-		//	if (colx) {
-		//		if (r->getComponent<Rock>().getTrComp()->pgetx() >
-		//			player.getComponent<TransformComponent>().pgetx() &&
-		//			player.getComponent<TransformComponent>().vgetx() > 0) {
-
-		//			r->getComponent<Rock>().setcase(2);//right
-		//			r->getComponent<Rock>().getTrComp()->setsp(1);
-		//			player.getComponent<TransformComponent>().setsp(1);
-		//			if (player.getComponent<TransformComponent>().pgetx() + 64 >
-		//				r->getComponent<Rock>().getTrComp()->pgetx()) {
-
-		//				player.getComponent<TransformComponent>().vsetx(0);
-		//				player.getComponent<TransformComponent>().psetx(r->getComponent<Rock>().getTrComp()->pgetx() - 64);
-		//			}
-		//			
-		//		}
-		//		else if (r->getComponent<Rock>().getTrComp()->pgetx() <
-		//			player.getComponent<TransformComponent>().pgetx() &&
-		//			player.getComponent<TransformComponent>().vgetx() < 0) {
-
-		//			r->getComponent<Rock>().setcase(3);//left
-		//			r->getComponent<Rock>().getTrComp()->setsp(1);
-		//			player.getComponent<TransformComponent>().setsp(1);
-		//			if (player.getComponent<TransformComponent>().pgetx() - 64 <
-		//				r->getComponent<Rock>().getTrComp()->pgetx()){
-
-		//				player.getComponent<TransformComponent>().vsetx(0);
-		//				player.getComponent<TransformComponent>().psetx(r->getComponent<Rock>().getTrComp()->pgetx() + 64);
-		//			}
-		//		}
-		//	}
-		//	else if (r->getComponent<Rock>().getcase() == 3 || r->getComponent<Rock>().getcase() == 2) {
-		//		r->getComponent<Rock>().setcase(0);
-		//		r->getComponent<Rock>().getTrComp()->setsp(2);
-		//		player.getComponent<TransformComponent>().setsp(3);
-		//	}
-		//	i++;
-		//}
-		//i = 0;
-		//for (auto& r : rocks) {
-		//	if (r->getComponent<Rock>().getcase()) {
-		//		for (auto& r1 : rocks) {
-		//			if (!r1->getComponent<Rock>().getcase()) {
-		//				if (Collision::AABBy(r->getComponent<ColliderComponent>().getcollider(),
-		//					r1->getComponent<ColliderComponent>().getcollider()) &&
-		//					r->getComponent<Rock>().getTrComp()->pgety() != rockPos[i].gety() &&
-		//					r->getComponent<Rock>().getTrComp()->pgetx() == r1->getComponent<Rock>().getTrComp()->pgetx()) {
-
-		//					r->getComponent<Rock>().setcase(0);//not moving
-		//					r->getComponent<Rock>().setPosition(rockPos[i]);
-		//					cout << "rock hit rock\n";
-		//					break;
-		//				}
-		//			}
-		//			if (!r1->getComponent<Rock>().getcase()) {
-		//				if (Collision::AABBx(r->getComponent<ColliderComponent>().getcollider(),
-		//					r1->getComponent<ColliderComponent>().getcollider()) &&
-		//					r->getComponent<Rock>().getTrComp()->pgetx() != rockPos[i].getx() &&
-		//					r->getComponent<Rock>().getTrComp()->pgety() == r1->getComponent<Rock>().getTrComp()->pgety()) {
-
-		//					r->getComponent<Rock>().setcase(0);//not moving
-		//					r->getComponent<Rock>().setPosition(rockPos[i]);
-		//					cout << "rock hit rock\n";
-		//					break;
-		//				}
-		//			}
-		//		}
-		//	}
-		//	i++;
-		//}
 		
-		//koko kara
 		i = 0;
 		for (auto& r : rocks) {
 			Vector2D rockpos = r->getComponent<Rock>().getPosition();
@@ -233,23 +210,28 @@ void Game::update() {
 			}else if (r->getComponent<Rock>().getcase() == 1 && Collision::AABByplayer(
 				player.getComponent<ColliderComponent>().getcollider(), r->getComponent<ColliderComponent>().getcollider()) &&
 				player.getComponent<TransformComponent>().pgety() > rockpos.gety()) {
-				//daca piatra cade is are coliziune cu jucatorul(sub piatra) - jucatorul moare
+				//daca piatra cade si are coliziune cu jucatorul(sub piatra) - jucatorul moare
 				if (player.getComponent<TransformComponent>().pgetx() >= r->getComponent<Rock>().getPosition().getx() + 60 ||
 					player.getComponent<TransformComponent>().pgetx() <= r->getComponent<Rock>().getPosition().getx() - 60) {
 
 					player.getComponent<TransformComponent>().setposition(playerPos);
 				}else {
-					cout << "Omae wa mou shindeiru!\n";
-					player.destroy();
-					manager.refresh();
+					playerdied = true;
+					livesleft--;
 					break;
 				}
 			}
-			else if (r->getComponent<Rock>().getcase() == 0 && !ok && !(harta.WhatatPos(rockpos, 4) == 1 || harta.WhatatPos(rockpos, 4) == 3 ||
+			else if (r->getComponent<Rock>().getcase() == 0 && !ok && !(harta.WhatatPos(rockpos, 4) ||
 				(Collision::AABBy(player.getComponent<ColliderComponent>().getcollider(), r->getComponent<ColliderComponent>().getcollider()) &&
 					player.getComponent<TransformComponent>().pgety() > rockpos.gety()))) {
 				//daca piatra sta si nu are sub ea jucatorul, alta piatra, zid sau carne - piatra cade
 				r->getComponent<Rock>().setcase(1);
+			}
+			else if (r->getComponent<Rock>().getcase() == 0 && !ok && !(harta.WhatatPos(rockpos, 4)==1 || harta.WhatatPos(rockpos, 4) == 3  ||
+				(Collision::AABBy(player.getComponent<ColliderComponent>().getcollider(), r->getComponent<ColliderComponent>().getcollider()) &&
+					player.getComponent<TransformComponent>().pgety() > rockpos.gety()))) {
+				//daca piatra sta si nu are sub ea jucatorul, alta piatra, zid sau carne - piatra cade
+					r->getComponent<Rock>().setcase(1);
 			}
 			else if (r->getComponent<Rock>().getcase() == 0 && 
 				Collision::AABByplayer(player.getComponent<ColliderComponent>().getcollider(), r->getComponent<ColliderComponent>().getcollider()) &&
@@ -280,7 +262,7 @@ void Game::update() {
 				player.getComponent<TransformComponent>().setsp(3);
 				r->getComponent<Rock>().setcase(0);
 				r->getComponent<Rock>().getTrComp()->setsp(2);
-				r->getComponent<Rock>().getTrComp()->psetx(rockPos[i].getx()/*-1*/);
+				r->getComponent<Rock>().getTrComp()->psetx(rockPos[i].getx());
 				if (Collision::AABBxplayer(player.getComponent<ColliderComponent>().getcollider(), r->getComponent<ColliderComponent>().getcollider()) &&
 					player.getComponent<TransformComponent>().pgetx()>playerPos.getx()) {
 					player.getComponent<TransformComponent>().psetx(playerPos.getx()-1);
@@ -348,14 +330,11 @@ void Game::update() {
 				r->getComponent<Rock>().setPosition(rockPos[i]);
 				r->getComponent<Rock>().getTrComp()->setsp(2);
 			}
-
-
 			i++;
 		}
 		
-		//koko made
 		
-		if (manager.getNrInGroup(groupPlayers)) {
+		if (!playerdied) {
 			
 			for (auto& m : meats) {
 				Vector2D pPos = player.getComponent<TransformComponent>().getposition();
@@ -366,7 +345,11 @@ void Game::update() {
 					harta.MeatDestroy(mPos);
 					m->destroy();
 					meateat++;
-					cout <<"Carne mancata: " << meateat << endl;
+					if (meateat == 100) {
+						meateat = 0;
+						if(livesleft<3)
+							livesleft++;
+					}
 				}
 			}
 
@@ -378,16 +361,19 @@ void Game::update() {
 
 					player.getComponent<TransformComponent>().setposition(playerPos);
 				}
-				else if (harta.WhatatPos(player.getComponent<TransformComponent>().getposition(), 6)==9) {
-					levelclear = true;
-				}
 				if (Collision::AABByplayer(player.getComponent<ColliderComponent>().getcollider(), cCol) &&
 					player.getComponent<TransformComponent>().pgety() != playerPos.gety()) {
 
 					player.getComponent<TransformComponent>().setposition(playerPos);
 				}
 			}
-		
+			if (harta.WhatatPos(player.getComponent<TransformComponent>().getposition(), 6) == 9) {
+				levelclear = true;
+			}
+			else if (player.getComponent<TransformComponent>().pgetx()<0) {
+				player.getComponent<TransformComponent>().psetx(0);
+			}
+
 			camera.x = player.getComponent<TransformComponent>().pgetx() - (MAX_WIDTH - 64) / 2;
 			camera.y = player.getComponent<TransformComponent>().pgety() - (MAX_HEIGHT - 64) / 2;
 
@@ -423,7 +409,29 @@ void Game::render() {
 		c->draw();
 	}*/
 	//label.draw();
+	int count = 0;
+	for (auto& i : imagini) {
+		if(esc && count == 0)
+			i->draw();
+		if (levelclear && curentlevel == 1 && count == 4)
+			i->draw();
+		if (levelclear && curentlevel == 2 && count == 5)
+			i->draw();
+		if (levelclear && curentlevel == 3 && count == 6)
+			i->draw();
+		if (curentlevel == 4 && count == 18)
+			i->draw();
+		if (playerdied && livesleft && count == 2)
+			i->draw();
+		if (!livesleft && !exitdead && count == 3)
+			i->draw();
+		if (((curentlevel == 4 && exitlvl4) || (!livesleft && exitdead)) && count == 1)
+			i->draw();
+		if (count == 7 + right && right >= 0 && right<=10)
+			i->draw();
 
+		count++;
+	}
 	//until here
 	SDL_RenderPresent(renderer);
 }
@@ -454,4 +462,24 @@ AssetManager* Game::getassets() {
 
 bool Game::getlevelclear() {
 	return levelclear;
+}
+
+void Game::setlevelclear(bool ok) {
+	levelclear = ok;
+}
+
+bool Game::getesc() {
+	return esc;
+}
+
+void Game::setesc(bool _esc) {
+	esc = _esc;
+}
+
+int Game::getclevel() {
+	return curentlevel;
+}
+
+void Game::setclevel(int lvl) {
+	curentlevel = lvl;
 }

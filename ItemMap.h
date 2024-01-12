@@ -23,7 +23,10 @@ public:
 	}
 
 	void AddtoMap(string id, int posX, int posY) {
-		if (id == "meat") {
+		if (id == "nic") {
+			Map[posX][posY] = 0;
+		}
+		else if (id == "meat") {
 			Map[posX][posY] = 3;
 		}
 		else if (id == "rock") {

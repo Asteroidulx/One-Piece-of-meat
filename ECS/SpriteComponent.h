@@ -64,8 +64,14 @@ public:
 				//player animation
 			}
 		}
-		destRect.x = transform->pgetx() - Game::camera.x;
-		destRect.y = transform->pgety() - Game::camera.y;
+		if (entity->hasGroup(Game::groupImages)) {
+			destRect.x = transform->pgetx();
+			destRect.y = transform->pgety();
+		}
+		else {
+			destRect.x = transform->pgetx() - Game::camera.x;
+			destRect.y = transform->pgety() - Game::camera.y;
+		}
 		destRect.w = transform->getw() / transform->gets();
 		destRect.h = transform->geth() / transform->gets();
 		

@@ -73,7 +73,7 @@ public:
 				transform->setmovox(false);
 				break;
 			case SDLK_ESCAPE:
-				Game::setisrunning(false);
+				Game::setesc(true);
 				break;
 			default:
 				break;

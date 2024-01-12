@@ -20,15 +20,24 @@ class Game {
 	static SDL_Event event;	
 	static AssetManager *assets;
 	bool levelclear = false;
+	static bool esc;
+	int curentlevel = 3;
+	
 public:
 	enum groupLabels : size_t {
 		groupMap,
 		groupPlayers,
 		groupColliders,
 		groupRocks,
-		groupMeats
+		groupMeats,
+		groupImages
 	};
 	static SDL_Rect camera;
+	int left = 0, right = 0;
+	bool exitlvl4 = false;
+	bool exitdead = false;
+	bool playerdied = false;
+	int livesleft = 3;
 	
 	Game(const char* title, atom x, atom y, atom w, atom h, bool fullscreen);
 	~Game();
@@ -43,4 +52,10 @@ public:
 	static SDL_Event getevent();
 	static void setevent(SDL_Event);
 	bool getlevelclear();
+	void setlevelclear(bool ok);
+	static bool getesc();
+	static void setesc(bool _esc);
+	int getclevel();
+	void setclevel(int);
+	void lvlinit(int lvl);
 };

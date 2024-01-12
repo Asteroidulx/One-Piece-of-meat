@@ -42,6 +42,7 @@ void AssetManager::createMandR(ItemMap& harta, string fisier, int sizeX, int siz
 	int src;
 	for (int y = 0; y < sizeY; ++y) {
 		for (int x = 0; x < sizeX; ++x) {
+			harta.AddtoMap("nic", x, y);
 			mapFile.get(c);
 			src = atoi(&c);
 			if (src == 2) {
@@ -65,6 +66,21 @@ void AssetManager::createMandR(ItemMap& harta, string fisier, int sizeX, int siz
 				createMeat({ x * 64, y * 64 }, m);
 		}
 	}
+}
+
+void AssetManager::addImages() {
+	for (int i = 0; i <= 18; ++i) {
+		char s[10];
+		_itoa_s(i,s,10);
+		CreateImage(s);
+	}
+}
+
+void AssetManager::CreateImage(string s) {
+	auto& imagine(manager->addEntity());
+	imagine.addComponent<TransformComponent>(256, 160, 320, 512, 1);
+	imagine.addComponent<SpriteComponent>(s);
+	imagine.addGroup(Game::groupImages);
 }
 
 //void AssetManager::AddFont(string id, string path, int fontSize) {
