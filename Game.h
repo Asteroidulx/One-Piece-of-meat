@@ -21,7 +21,7 @@ class Game {
 	static AssetManager *assets;
 	bool levelclear = false;
 	static bool esc;
-	int curentlevel = 3;
+	int curentlevel = 1;
 	
 public:
 	enum groupLabels : size_t {
@@ -58,4 +58,5 @@ public:
 	int getclevel();
 	void setclevel(int);
 	void lvlinit(int lvl);
+	void setmeat(int m);
 };

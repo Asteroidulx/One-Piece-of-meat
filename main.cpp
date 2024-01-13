@@ -11,7 +11,7 @@ int main(int argc, char* args[])
 	Game *game = nullptr;
 	SDL_Event event;
 	game=new Game("One Piece of Meat", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, MAX_WIDTH, MAX_HEIGHT, false);
-	game->lvlinit(3);
+	game->lvlinit(1);
 	game->update();
 	
 	while (game->running()) {
@@ -191,10 +191,11 @@ int main(int argc, char* args[])
 				while (SDL_PollEvent(&event)) {
 					if (event.type == SDL_KEYUP)
 						switch (event.key.keysym.sym) {
-						case SDLK_ESCAPE: breakok = true;
+						case SDLK_e: breakok = true;
 							game->setisrunning(false);
 							break;
 						case SDLK_r: game->lvlinit(1);
+							game->setmeat(0);
 							game->setclevel(1);
 							game->livesleft = 3;
 							game->exitdead = false;
@@ -222,28 +223,29 @@ int main(int argc, char* args[])
 		if (game->getesc()) {
 			while (game->running()) {
 				bool breakok = false;
-				while (SDL_PollEvent(&event)) {
-					if (event.type == SDL_KEYUP)
-						switch (event.key.keysym.sym) {
-						case SDLK_t: breakok = true;
-							break;
-						case SDLK_l: game->lvlinit(game->getclevel());
-							game->livesleft--;
-							breakok = true;
-							break;
-						case SDLK_ESCAPE: breakok = true;
-							game->setisrunning(false);
-							break;
-						case SDLK_r: game->lvlinit(1);
-							game->setclevel(1);
-							game->exitdead = false;
-							game->livesleft = 3;
-							breakok = true;
-							break;
-						default: breakok = false;
-							break;
-						}
-				}
+				if (game->getevent().type == SDL_KEYUP)
+					switch (game->getevent().key.keysym.sym) {
+					case SDLK_t: breakok = true;
+						break;
+					case SDLK_l: game->lvlinit(game->getclevel());							
+						game->livesleft--;
+						breakok = true;
+						break;
+					case SDLK_e: breakok = true;
+						game->setisrunning(false);
+						break;	
+					case SDLK_r: game->lvlinit(1);
+						game->setclevel(1);
+						game->setmeat(0);
+						game->exitdead = false;
+						game->livesleft = 3;
+						breakok = true;
+						break;
+					default: breakok = false;
+						break;
+					}
+				if (breakok)
+					break;
 				frameStart = SDL_GetTicks();
 				game->handleEvents();
 				//game->update();
@@ -251,8 +253,6 @@ int main(int argc, char* args[])
 				frameTime = SDL_GetTicks() - frameStart;
 				if (frameDelay > frameTime) {
 					SDL_Delay(frameDelay - frameTime);
-					if (breakok)
-						break;
 				}
 			}
 			game->setesc(false);

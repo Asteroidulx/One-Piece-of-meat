@@ -58,6 +58,10 @@ Game::Game(const char* title, atom x, atom y, atom w, atom h, bool fullscreen) {
 	assets->AddTexture("rock", "assets/Rock-animation360.png");
 	assets->AddTexture("meat", "assets/meat.png");
 
+	assets->AddTexture("1face", "assets/Luffy_face1.png");
+	assets->AddTexture("2faces", "assets/Luffy_face2.png");
+	assets->AddTexture("3faces", "assets/Luffy_face3.png");
+
 	assets->AddTexture("0", "assets/Fundal/menu_esc.png");			
 	assets->AddTexture("1", "assets/Fundal/menu_final_or_dead.png");	
 	assets->AddTexture("2", "assets/Fundal/you_died.png");			
@@ -80,7 +84,7 @@ Game::Game(const char* title, atom x, atom y, atom w, atom h, bool fullscreen) {
 	//assets->AddFont("arial", "assets/arial.ttf", 16);
 	
 	assets->addImages();
-
+	assets->addFaces();
 	player.addComponent<TransformComponent>( 0, 1152 );//(64*0, 64*18)
 	player.addComponent<SpriteComponent>("player");
 	player.addComponent<KeyboardController>();
@@ -112,8 +116,7 @@ void Game::lvlinit(int lvl){
 	manager.refresh();
 	manager.update();
 	player.getComponent<TransformComponent>().setposition({ 0, 1152 });
-	player.getComponent<TransformComponent>().setvelocity({0, 0 });
-	meateat = 0;
+	player.getComponent<TransformComponent>().setvelocity({ 0, 0 });
 	if (lvl == 1) {
 		mapa->LoadMap("assets/Lvl1Map.map", 32, 20);
 		assets->createMandR(harta, "assets/Lvl1ItemMap.Map", 32, 20);
@@ -411,25 +414,30 @@ void Game::render() {
 	//label.draw();
 	int count = 0;
 	for (auto& i : imagini) {
-		if(esc && count == 0)
-			i->draw();
-		if (levelclear && curentlevel == 1 && count == 4)
-			i->draw();
-		if (levelclear && curentlevel == 2 && count == 5)
-			i->draw();
-		if (levelclear && curentlevel == 3 && count == 6)
-			i->draw();
-		if (curentlevel == 4 && count == 18)
-			i->draw();
-		if (playerdied && livesleft && count == 2)
-			i->draw();
-		if (!livesleft && !exitdead && count == 3)
-			i->draw();
-		if (((curentlevel == 4 && exitlvl4) || (!livesleft && exitdead)) && count == 1)
-			i->draw();
+		if (count == 0 && esc)
+			i->draw();//escape
+		if (count == 1 && ((curentlevel == 4 && exitlvl4) || (!livesleft && exitdead)))
+			i->draw();//menu - you died for good or finished game
+		if (count == 2 && playerdied && livesleft)
+			i->draw();//you died
+		if (count == 3 && !livesleft && !exitdead)
+			i->draw();//omae wa mou shindeiru
+		if (count == 4 && levelclear && curentlevel == 1)
+			i->draw();//level 1 clear
+		if (count == 5 && levelclear && curentlevel == 2)
+			i->draw();//level 2 clear
+		if (count == 6 && levelclear && curentlevel == 3)
+			i->draw();//last level clear
 		if (count == 7 + right && right >= 0 && right<=10)
-			i->draw();
-
+			i->draw();//begining panels
+		if (count == 18 && curentlevel == 4 && !exitlvl4)
+			i->draw();//the Meat
+		if (count == 19 && livesleft == 1)
+			i->draw();//o fata
+		if (count == 20 && livesleft == 2)
+			i->draw();//doua fete
+		if (count == 21 && livesleft == 3)
+			i->draw();//trei fete
 		count++;
 	}
 	//until here
@@ -482,4 +490,8 @@ int Game::getclevel() {
 
 void Game::setclevel(int lvl) {
 	curentlevel = lvl;
+}
+
+void Game::setmeat(int m) {
+	meateat = m;
 }

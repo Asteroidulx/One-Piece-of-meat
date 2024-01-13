@@ -68,6 +68,29 @@ void AssetManager::createMandR(ItemMap& harta, string fisier, int sizeX, int siz
 	}
 }
 
+void AssetManager::addFaces() {
+	for (int i = 0; i < 3; ++i) {
+		addFace(i+1);
+	}
+}
+
+void AssetManager::addFace(int nr) {
+	auto& imagine(manager->addEntity());
+	int x = 1024 - 64 * nr;
+	imagine.addComponent<TransformComponent>(x, 0);
+	switch (nr) {
+	case 1: imagine.addComponent<SpriteComponent>("1face");
+			break;
+	case 2: imagine.getComponent<TransformComponent>().setw(800);
+			imagine.addComponent<SpriteComponent>("2faces");
+			break;
+	case 3: imagine.getComponent<TransformComponent>().setw(1200);
+			imagine.addComponent<SpriteComponent>("3faces");
+			break;
+	}
+	imagine.addGroup(Game::groupImages);
+}
+
 void AssetManager::addImages() {
 	for (int i = 0; i <= 18; ++i) {
 		char s[10];

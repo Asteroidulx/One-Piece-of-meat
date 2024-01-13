@@ -11,7 +11,7 @@ public:
 	}
 
 	void update() override {
-		if (Game::getevent().type == SDL_KEYDOWN) {
+		if (Game::getevent().type == SDL_KEYDOWN){
 			switch (Game::getevent().key.keysym.sym) {
 			case SDLK_w:
 				transform->vsetx(0);
@@ -37,7 +37,6 @@ public:
 				break;
 			}
 		}
-
 		if (Game::getevent().type == SDL_KEYUP) {
 			switch (Game::getevent().key.keysym.sym) {
 			case SDLK_w:

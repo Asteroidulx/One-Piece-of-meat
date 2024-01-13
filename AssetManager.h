@@ -17,6 +17,8 @@ public:
 	~AssetManager();
 	//game objects
 	void addImages();
+	void addFace(int);
+	void addFaces();
 	void CreateImage(string s);
 	void createRock(Vector2D pos, string id);
 	void createMeat(Vector2D pos, string id);
