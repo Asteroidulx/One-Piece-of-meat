@@ -76,7 +76,7 @@ void AssetManager::addFaces() {
 
 void AssetManager::addFace(int nr) {
 	auto& imagine(manager->addEntity());
-	int x = 1024 - 64 * nr;
+	int x = MAX_WIDTH - 64 * nr;
 	imagine.addComponent<TransformComponent>(x, 0);
 	switch (nr) {
 	case 1: imagine.addComponent<SpriteComponent>("1face");
@@ -101,7 +101,8 @@ void AssetManager::addImages() {
 
 void AssetManager::CreateImage(string s) {
 	auto& imagine(manager->addEntity());
-	imagine.addComponent<TransformComponent>(256, 160, 320, 512, 1);
+	float scale = 320 / (MAX_HEIGHT * (6. / 8));
+	imagine.addComponent<TransformComponent>(MAX_WIDTH/8, MAX_HEIGHT/8, 320, 512, scale);
 	imagine.addComponent<SpriteComponent>(s);
 	imagine.addGroup(Game::groupImages);
 }

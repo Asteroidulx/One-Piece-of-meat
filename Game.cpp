@@ -10,11 +10,9 @@
 
 Map* mapa;
 Manager manager;
-
+SDL_Rect Game::camera = { 0, 0, MAX_WIDTH, MAX_HEIGHT };
 SDL_Renderer* Game::renderer = nullptr;
 SDL_Event Game::event;
-
-SDL_Rect Game::camera = {0, 0, MAX_WIDTH, MAX_HEIGHT};
 
 AssetManager* Game::assets = new AssetManager(&manager);
 ItemMap harta(32, 20);
@@ -27,6 +25,7 @@ auto& player(manager.addEntity());
 //auto& label(manager.addEntity());
 
 Game::Game(const char* title, atom x, atom y, atom w, atom h, bool fullscreen) {
+	
 	atom flags = 0;
 	if (fullscreen) {
 		flags = SDL_WINDOW_FULLSCREEN;

@@ -22,6 +22,7 @@ class Game {
 	bool levelclear = false;
 	static bool esc;
 	int curentlevel = 1;
+	int screenw, screenh;
 	
 public:
 	enum groupLabels : size_t {
